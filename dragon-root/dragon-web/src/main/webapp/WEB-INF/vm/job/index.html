@@ -1,0 +1,188 @@
+<!DOCTYPE script PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="renderer" content="webkit">
+<link rel="stylesheet"
+	href="${rc.contextPath}/bootstrap-3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet"
+	href="${rc.contextPath}/bootstrap-3.3.5/css/bootstrap-theme.min.css">
+<link rel="stylesheet"
+	href="${rc.contextPath}/bootstrap-table/bootstrap-table.min.css">
+<link rel="stylesheet"
+	href="${rc.contextPath}/css/bootstrap-editable.css">
+<link rel="stylesheet"
+	href="//rawgit.com/vitalets/x-editable/master/dist/bootstrap3-editable/css/bootstrap-editable.css">
+<script type="text/javascript"
+	src="${rc.contextPath}/js/jquery-1.11.3.min.js"></script>
+<script type="text/javascript"
+	src="${rc.contextPath}/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="${rc.contextPath}/bootstrap-table/bootstrap-table.min.js"></script>
+<script
+	src="${rc.contextPath}/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script
+	src="${rc.contextPath}/bootstrap-table/extensions/export/bootstrap-table-export.min.js"></script>
+<script
+	src="${rc.contextPath}/bootstrap-table/extensions/editable/bootstrap-table-editable.min.js"></script>
+<script type="text/javascript"
+	src="${rc.contextPath}/js/bootstrap-editable.js"></script>
+</head>
+<body style="font-size: 12px;">
+	<div id="toolbar">
+		<button id="add" class="btn btn-danger">
+			<i class="glyphicon glyphicon-plus"></i> 新增
+		</button>
+		<button id="remove" class="btn btn-danger" disabled>
+			<i class="glyphicon glyphicon-remove"></i> 删除
+		</button>
+	</div>
+	<table data-url="../job/queryJobList.do" data-toolbar="#toolbar"
+		data-height="700" data-cache="false" data-toggle="table"
+		data-search="true" data-show-refresh="true" data-show-toggle="true"
+		data-show-columns="true" data-show-export="false"
+		data-detail-view="false" data-detail-formatter="detailFormatter"
+		data-show-pagination-switch="true" data-pagination="true"
+		data-id-field="jobId" data-show-footer="false" data-page-list="[10, 25, 50, 100, ALL]"
+		data-side-pagination="client"
+		class="table table-bordered table-hover table-condensed">
+		<thead>
+			<tr>
+				<th data-field="state" data-align="center" data-checkbox="true"></th>
+				<th data-field="jobId" data-sortable="true" data-align="center">ID</th>
+				<th data-field="jobName" data-editable="true" data-sortable="true"
+					data-align="center">名称</th>
+				<th data-field="jobGroup" data-sortable="true" data-align="center">分组</th>
+				<th data-field="jobStatus" data-sortable="true" data-align="center">状态</th>
+				<th data-field="jobExecuteStatus" data-sortable="true"
+					data-formatter="executeStatusFormater" data-align="center">运行状态</th>
+				<th data-field="jobInvokeClass" data-sortable="true"
+					data-align="center">运行的类</th>
+				<th data-field="jobCronExpression" data-sortable="true"
+					data-align="center">表达式</th>
+				<th data-field="preFireTime" data-sortable="true"
+					data-align="center">上次触发时间</th>
+				<th data-field="nextFireTime" data-sortable="true"
+					data-align="center">下次触发时间</th>
+				<th data-field="jobNote" data-align="center">备注</th>
+				<th data-field="operate" data-formatter="operateFormater"
+					data-align="center" data-events="operateEvents">操作</th>
+			</tr>
+		</thead>
+	</table>
+</body>
+<script type="text/javascript">
+	var $table = $('#table'), $remove = $('#remove'), selections = [];
+	$(document).ready(function() {
+		// sometimes footer render error.
+		setTimeout(function() {
+			$table.bootstrapTable('resetView');
+		}, 200);
+
+	});
+
+	function getIdSelections() {
+		return $.map($table.bootstrapTable('getSelections'), function(row) {
+			return row.id
+		});
+	}
+
+	// 生成操作内容
+	function operateFormater(value, row, index) {
+		var operate = "<a href='javascript:void(0)' class='easyui-linkbutton' onclick='triggerNow("
+				+ row.jobId + ")'>立即执行</a> ";
+		operate += "<a href='javascript:void(0)' class='easyui-linkbutton' onclick='delJob("
+				+ row.jobId + ")'>删除</a> ";
+		if (row.jobExecuteStatus == 0) {
+			operate += "<a href='javascript:void(0)' class='easyui-linkbutton' onclick='pauseJob("
+					+ row.jobId + ")'>暂停</a> ";
+		}
+		if (row.jobExecuteStatus == 1) {
+			operate += "<a href='javascript:void(0)' class='easyui-linkbutton' onclick='resumeJob("
+					+ row.jobId + ")'>恢复</a> ";
+		}
+		return [ '<a class="remove" href="javascript:void(0)" title="删除">',
+				'<i class="glyphicon glyphicon-remove"></i>', '</a>' ].join('');
+	}
+
+	function removeData(field, value) {
+		$table.bootstrapTable('remove', {
+			field : field,
+			values : [ 301 ]
+		});
+	}
+
+	window.operateEvents = {
+		'click .remove' : function(e, value, row, index) {
+			if (confirm("确定要删除吗？")) {
+				removeData("jobId", row.jobId);
+				var url = "../job/deleteJob.do";
+				$.post(url, {
+					jobId : row.jobId
+				}, function(data) {
+					if (data.result) {
+					} else {
+						alert("操作失败");
+					}
+				}, "json");
+			}
+		}
+	};
+
+	// 运行状态
+	function executeStatusFormater(value, row, index) {
+		var result = "";
+		if (value == 0) {
+			result = "正常";
+		} else if (value == 1) {
+			result = "暂停";
+		} else if (value == 2) {
+			result = "完成";
+		} else if (value == 3) {
+			result = "错误";
+		} else if (value == 4) {
+			result = "阻塞";
+		} else if (value == -1) {
+			result = "触发器不存在";
+		}
+		return result;
+	}
+
+	// 暂停任务
+	function pauseJob(jobId) {
+		if (confirm("确定要暂停吗？")) {
+			var url = "../job/pauseJob.do";
+			$.post(url, {
+				jobId : jobId
+			}, function(data) {
+				if (data.result) {
+					alert("操作成功");
+					refreshJob();
+				} else {
+					alert("操作失败");
+				}
+			}, "json");
+		}
+	}
+
+	// 恢复任务
+	function resumeJob(jobId) {
+		if (confirm("确定要恢复吗？")) {
+			var url = "../job/resumeJob.do";
+			$.post(url, {
+				jobId : jobId
+			}, function(data) {
+				if (data.result) {
+					alert("操作成功");
+					refreshJob();
+				} else {
+					alert("操作失败");
+				}
+			}, "json");
+		}
+	}
+
+	function responseHandler(res) {
+		return res;
+	}
+</script>
+</html>
