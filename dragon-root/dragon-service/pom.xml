@@ -9,18 +9,6 @@
 	<artifactId>dragon-service</artifactId>
 
 	<dependencies>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context-support</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.dragon</groupId>
-			<artifactId>dragon-dao</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>com.dragon</groupId>
-			<artifactId>dragon-commons</artifactId>
-		</dependency>
 	</dependencies>
 
 </project>

@@ -1,5 +1,10 @@
 Manifest-Version: 1.0
-Build-Jdk: 1.7.0_80
-Built-By: jianghl
+Implementation-Title: dragon-dao
+Implementation-Version: 0.0.1-SNAPSHOT
+Built-By: Administrator
+Implementation-Vendor-Id: com.dragon
+Build-Jdk: 1.8.0_111
+Implementation-URL: https://projects.spring.io/spring-boot/#/spring-bo
+ ot-starter-parent/dragon-root/dragon-dao
 Created-By: Maven Integration for Eclipse
 
