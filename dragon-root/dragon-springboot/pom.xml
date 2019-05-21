@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>com.dragon</groupId>
 			<artifactId>dragon-service</artifactId>
-		</dependency>
+		</dependency> 
 		
 		<dependency>
 			<groupId>junit</groupId>
