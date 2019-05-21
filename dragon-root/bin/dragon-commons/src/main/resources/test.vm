@@ -1,5 +1,0 @@
-<response>
-	<queryRefund>
-		<errorMsg>$!errMsg</errorMsg>
-	</queryRefund>
-</response>
